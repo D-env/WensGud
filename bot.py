@@ -11,7 +11,7 @@ load_dotenv()
 
 TOKEN = os.getenv('DISCORD_TOKEN')
 GUILD = os.getenv('DISCORD_GUILD')
-time_regex = r"([0|1]\d:[0-5]\d)|(2[0-3]:[0-5]\d)"
+time_regex = r"([0|1]\d[0-5]\d,[0|1]\d[0-5]\d)|(2[0-3][0-5]\d,[0|1]\d[0-5]\d)|(2[0-3][0-5]\d,2[0-3][0-5]\d)|([0|1]\d[0-5]\d,2[0-3][0-5]\d)"
 
 members = {}
 events = {}
@@ -98,8 +98,29 @@ async def opt_out(ctx):
 async def enter_availability(message):
     days_of_week = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
     user_availability = []
-    await message.channel.send(f'For each days availability, please enter your available time range in a 24 hour format '
-                               f'(Ex. 15:45, 23:30) or None if not available')
+    await message.channel.send(f'We hear you want to change your availability. Please enter the days you would like '
+                               f'to change your availability on separated by a space. (Ex. Tuesday Friday)'
+                               f' If you want to change availability for all days enter \"All\"')
+
+    days = await bot.wait_for('message')
+    if days.lower == "all":
+        await message.channel.send(f'You are changing your availability for every day of the week. Please enter your '
+                                   f'availability Sunday-Saturday in a similar format to the following: '
+                                   f'0830,1230 1140,1440 1630,1830 1440,1540 1020,1350 0600,0700 0740,1830')
+        times = await bot.wait_for('message')
+        times_list = helper_check(times.content)
+        if len(times_list) == 7:
+            for time in times_list:
+                user_availability.append(time)
+    else:
+        split_days = days.split(" ")
+        await message.channel.send(f'You are changing your availability for {days}. Please enter your availability'
+                                   f'starting with the day closest to Sunday and ending with the day closest to '
+                                   f'Saturday. If you are changing your availabilty for Tuesday and Friday it would be'
+                                   f'08:40,12:30 12:30,14:30')
+        times = await bot.wait_for('message')
+        times_list = helper_check()
+
 
     for day in days_of_week:
         sleep(1)
