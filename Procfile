@@ -1,1 +1,1 @@
-web: python wensgud/bots.py
+web: python bots.py
